@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_error, csrf_field %}
+{% set editing = mode == 'edit' %}
+{% block title %}{{ 'Edit item' if editing else 'Add item' }} · Collection{% endblock %}
+
+{% block content %}
+<form class="form" method="post" enctype="multipart/form-data" novalidate>
+  {{ csrf_field() }}
+  <h1>{{ 'Edit item' if editing else 'Add item' }}</h1>
+
+  <div class="form-grid">
+    <div class="form-fields">
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" required maxlength="200"
+             value="{{ item.get('name', '') }}" {% if errors.name %}aria-describedby="name-error" aria-invalid="true"{% endif %}>
+      {{ field_error(errors, 'name') }}
+
+      <div class="row">
+        <div>
+          <label for="date_acquired">Date acquired</label>
+          <input id="date_acquired" name="date_acquired" type="date"
+                 value="{{ item.get('date_acquired') or '' }}">
+          {{ field_error(errors, 'date_acquired') }}
+        </div>
+        <div>
+          <label for="location_acquired">Location acquired</label>
+          <input id="location_acquired" name="location_acquired" type="text" maxlength="200"
+                 value="{{ item.get('location_acquired') or '' }}">
+          {{ field_error(errors, 'location_acquired') }}
+        </div>
+      </div>
+
+      <label for="trip_name">Trip name</label>
+      <input id="trip_name" name="trip_name" type="text" maxlength="200" list="trip-options"
+             value="{{ item.get('trip_name') or '' }}">
+      <datalist id="trip-options">{% for t in known_trips %}<option value="{{ t }}">{% endfor %}</datalist>
+      {{ field_error(errors, 'trip_name') }}
+
+      <label for="tags">Tags</label>
+      {% set raw_tags = item.get('tags') %}
+      <input id="tags" name="tags" type="text" placeholder="Separate with commas"
+             value="{% if raw_tags is string %}{{ raw_tags }}{% elif raw_tags %}{{ raw_tags|join(', ') }}{% endif %}">
+      {{ field_error(errors, 'tags') }}
+      {% if known_tags %}
+        <ul class="chips" aria-label="Existing tags">
+          {% for t in known_tags[:30] %}<li><button type="button" class="chip" data-add-tag="{{ t }}">{{ t }}</button></li>{% endfor %}
+        </ul>
+      {% endif %}
+
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="7" maxlength="5000">{{ item.get('description') or '' }}</textarea>
+      {{ field_error(errors, 'description') }}
+    </div>
+
+    <div class="form-image">
+      <label for="image">Photo</label>
+      <div class="preview" id="preview">
+        {% if item.get('image_filename') %}
+          <img id="preview-img" alt="" src="{{ url_for('items.media', filename=item.image_filename) }}">
+        {% else %}
+          <img id="preview-img" alt="" hidden>
+          <span id="preview-empty">No photo yet</span>
+        {% endif %}
+      </div>
+      <input id="image" name="image" type="file" accept="image/*">
+      {{ field_error(errors, 'image') }}
+
+      {% if editing and item.get('image_filename') %}
+        <label class="check"><input type="checkbox" name="remove_image" value="1"> Remove current photo</label>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" type="submit">{{ 'Save changes' if editing else 'Add item' }}</button>
+    <a class="btn" href="{{ url_for('items.detail', item_id=item.id) if editing else url_for('items.index') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

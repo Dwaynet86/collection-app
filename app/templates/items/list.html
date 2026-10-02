@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_macros.html" import item_image %}
+{% block title %}Collection{% endblock %}
+
+{% block content %}
+<form class="toolbar" method="get" role="search">
+  <input type="search" name="q" value="{{ search }}" placeholder="Search name, place, trip, tag, or notes" aria-label="Search items">
+  <select name="trip" aria-label="Filter by trip" data-autosubmit>
+    <option value="">All trips</option>
+    {% for t in trips %}<option value="{{ t.trip_name }}" {{ 'selected' if t.trip_name|lower == trip|lower }}>{{ t.trip_name }} ({{ t.n }})</option>{% endfor %}
+  </select>
+  <select name="tag" aria-label="Filter by tag" data-autosubmit>
+    <option value="">All tags</option>
+    {% for t in tags %}<option value="{{ t.name }}" {{ 'selected' if t.name == tag|lower }}>{{ t.name }} ({{ t.n }})</option>{% endfor %}
+  </select>
+  <select name="sort" aria-label="Sort items" data-autosubmit>
+    <option value="added"    {{ 'selected' if sort == 'added' }}>Recently added</option>
+    <option value="oldest"   {{ 'selected' if sort == 'oldest' }}>Oldest added</option>
+    <option value="acquired" {{ 'selected' if sort == 'acquired' }}>Date acquired</option>
+    <option value="name"     {{ 'selected' if sort == 'name' }}>Name</option>
+  </select>
+</form>
+
+{% set filtered = search or tag or trip %}
+{% if items %}
+  <p class="count">{{ total }} item{{ '' if total == 1 else 's' }}{% if filtered %} found{% endif %}</p>
+  <ul class="grid">
+    {% for item in items %}
+    <li>
+      <a class="tile" href="{{ url_for('items.detail', item_id=item.id) }}">
+        {{ item_image(item, class="tile-img", thumb=True) }}
+        <span class="tile-name">{{ item.name }}</span>
+        <span class="tile-meta">
+          {{ item.date_acquired|pretty_date }}{% if item.date_acquired and item.location_acquired %}, {% endif %}{{ item.location_acquired or '' }}
+        </span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+
+  {% if pages > 1 %}
+  <nav class="pagination" aria-label="Pages">
+    {% if page > 1 %}<a class="btn" href="{{ url_for('items.index', q=search, tag=tag, trip=trip, sort=sort, page=page-1) }}">Previous</a>{% endif %}
+    <span>Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="btn" href="{{ url_for('items.index', q=search, tag=tag, trip=trip, sort=sort, page=page+1) }}">Next</a>{% endif %}
+  </nav>
+  {% endif %}
+{% elif filtered %}
+  <div class="empty">
+    <h1>No items match those filters.</h1>
+    <a class="btn" href="{{ url_for('items.index') }}">Clear filters</a>
+  </div>
+{% else %}
+  <div class="empty">
+    <h1>Your collection is empty.</h1>
+    <p>Add the first item with a photo, where you found it, and when.</p>
+    <a class="btn btn-primary" href="{{ url_for('items.create') }}">Add item</a>
+  </div>
+{% endif %}
+{% endblock %}

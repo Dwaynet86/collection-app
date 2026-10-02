@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import item_image, csrf_field %}
+{% block title %}{{ item.name }} · Collection{% endblock %}
+
+{% block content %}
+<article class="detail">
+  <div class="detail-media">
+    {{ item_image(item, class="detail-img") }}
+  </div>
+
+  <div class="detail-body">
+    <a class="back" href="{{ url_for('items.index') }}">Back to collection</a>
+    <h1>{{ item.name }}</h1>
+
+    <dl class="facts">
+      <div><dt>Acquired</dt><dd>{{ (item.date_acquired|pretty_date) or 'Date not recorded' }}</dd></div>
+      <div><dt>Where</dt><dd>{{ item.location_acquired or 'Location not recorded' }}</dd></div>
+      <div><dt>Trip</dt><dd>{% if item.trip_name %}<a href="{{ url_for('items.index', trip=item.trip_name) }}">{{ item.trip_name }}</a>{% else %}No trip{% endif %}</dd></div>
+    </dl>
+
+    {% if item.tags %}
+      <ul class="chips" aria-label="Tags">
+        {% for t in item.tags %}<li><a class="chip" href="{{ url_for('items.index', tag=t) }}">{{ t }}</a></li>{% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if item.description %}
+      <p class="description">{{ item.description }}</p>
+    {% endif %}
+
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('items.edit', item_id=item.id) }}">Edit</a>
+      <button class="btn btn-danger" type="button" data-open-dialog="confirm-delete">Remove</button>
+    </div>
+  </div>
+</article>
+
+<dialog id="confirm-delete" class="dialog">
+  <form method="post" action="{{ url_for('items.delete', item_id=item.id) }}">
+    {{ csrf_field() }}
+    <h2>Remove “{{ item.name }}”?</h2>
+    <p>This deletes the item and its photo. You can't undo it.</p>
+    <div class="actions">
+      <button class="btn" type="button" data-close-dialog>Keep item</button>
+      <button class="btn btn-danger" type="submit">Remove item</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

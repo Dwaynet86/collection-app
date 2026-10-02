@@ -1,0 +1,18 @@
+{# Reusable template pieces. #}
+
+{% macro item_image(item, class="", thumb=False) %}
+  {% if item.image_filename %}
+    <img class="{{ class }}" alt="{{ item.name }}" loading="lazy"
+         src="{{ url_for('items.thumb' if thumb else 'items.media', filename=item.image_filename) }}">
+  {% else %}
+    <div class="{{ class }} placeholder" aria-hidden="true">{{ item.name[:1]|upper }}</div>
+  {% endif %}
+{% endmacro %}
+
+{% macro field_error(errors, field) %}
+  {% if errors.get(field) %}<p class="field-error" id="{{ field }}-error">{{ errors[field] }}</p>{% endif %}
+{% endmacro %}
+
+{% macro csrf_field() %}
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{% endmacro %}

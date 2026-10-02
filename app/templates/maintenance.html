@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Maintenance · Collection{% endblock %}
+
+{% block content %}
+<h1>Maintenance</h1>
+<p class="lede">Tools for looking after the collection as a whole.</p>
+
+<section class="panel">
+  <h2>Overview</h2>
+  <dl class="stats">
+    <div><dt>Items</dt><dd>{{ stats.items }}</dd></div>
+    <div><dt>With photos</dt><dd>{{ stats.with_images }}</dd></div>
+    <div><dt>Tags</dt><dd>{{ stats.tags }}</dd></div>
+    <div><dt>Trips</dt><dd>{{ stats.trips }}</dd></div>
+    <div><dt>Photo storage</dt><dd>{{ disk_bytes|filesize }}</dd></div>
+  </dl>
+</section>
+
+<section class="panel">
+  <h2>Export</h2>
+  <p>Download your collection. Exports include every item, with tags and trip names.</p>
+  <ul class="tool-list">
+    <li>
+      <div><strong>Spreadsheet (CSV)</strong><span>One row per item. Opens in Excel or Google Sheets.</span></div>
+      <a class="btn" href="{{ url_for('maintenance.export_csv') }}">Download CSV</a>
+    </li>
+    <li>
+      <div><strong>Data (JSON)</strong><span>Structured data for other tools or scripts.</span></div>
+      <a class="btn" href="{{ url_for('maintenance.export_json') }}">Download JSON</a>
+    </li>
+    <li>
+      <div><strong>Full backup (ZIP)</strong><span>The JSON data plus every photo.</span></div>
+      <a class="btn btn-primary" href="{{ url_for('maintenance.export_zip') }}">Download backup</a>
+    </li>
+  </ul>
+</section>
+{% endblock %}
