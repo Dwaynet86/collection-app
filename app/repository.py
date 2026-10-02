@@ -132,7 +132,7 @@ def get_stats() -> dict:
     """Headline counts for the maintenance page."""
     with get_conn() as conn:
         return conn.execute(
-            """SELECT (SELECT count(*) FROM items) AS items,
+            """SELECT (SELECT count(*) FROM items) AS item_count,
                       (SELECT count(*) FROM items WHERE image_filename IS NOT NULL) AS with_images,
                       (SELECT count(*) FROM tags) AS tags,
                       (SELECT count(DISTINCT lower(trip_name)) FROM items) AS trips"""
