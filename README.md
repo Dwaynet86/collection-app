@@ -11,6 +11,11 @@ createdb collection             # or create via your existing Postgres tooling
 python scripts/init_db.py       # applies schema.sql
 python run.py                   # http://127.0.0.1:5000
 ```
+## Windows
+```
+pip install waitress
+waitress-serve --host=0.0.0.0 --port=5000 --call app:create_app
+```
 
 ## Layout
 ```
