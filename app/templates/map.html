@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Map · {{ collection.name }}{% endblock %}
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/markercluster/MarkerCluster.css') }}">
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='vendor/markercluster/leaflet.markercluster.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/geo.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/map.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<section id="map-page" class="map-page"
+         data-pins-url="{{ url_for('geo.pins') }}"
+         data-countries="{{ url_for('static', filename='geo/countries.json') }}"
+         data-focus="{{ focus or '' }}">
+  <h1>Map</h1>
+  <form class="toolbar map-filters" method="get" role="search">
+    <input type="search" name="q" value="{{ search }}" placeholder="Search items" aria-label="Search items">
+    <select name="tag" aria-label="Filter by tag">
+      <option value="">All tags</option>
+      {% for t in tags %}<option value="{{ t.name }}" {{ 'selected' if t.name|lower == tag|lower }}>{{ t.name }} ({{ t.n }})</option>{% endfor %}
+    </select>
+    <select name="trip" aria-label="Filter by trip">
+      <option value="">All trips</option>
+      {% for t in trips %}<option value="{{ t.id }}" {{ 'selected' if t.id == trip }}>{{ t.name }} ({{ t.item_count }})</option>{% endfor %}
+    </select>
+    <a class="btn" href="{{ url_for('items.index', q=search or none, tag=tag or none, trip=trip) }}">Gallery</a>
+  </form>
+  <p id="map-status" class="count" role="status" aria-live="polite">Loading pins…</p>
+  <div id="geo-map" class="geo-map geo-map-large" aria-label="Map of where items came from"></div>
+  <noscript><p>The map needs JavaScript.</p></noscript>
+</section>
+{% endblock %}

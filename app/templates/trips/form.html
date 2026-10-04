@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_error, csrf_field %}
+{% block title %}Edit trip · {{ collection.name }}{% endblock %}
+{% block content %}
+<form class="form form-narrow" method="post">
+  {{ csrf_field() }}
+  <a class="back" href="{{ url_for('trips.index') }}">Back to trips</a>
+  <h1>Edit trip</h1>
+  {% if trip.is_default %}<p class="lede">This is the default trip. Items go here when they have no other trip. It can be renamed but not deleted.</p>{% endif %}
+
+  <label for="name">Name</label>
+  <input id="name" name="name" type="text" maxlength="200" value="{{ form.get('name', '') }}" required>
+  {{ field_error(errors, 'name') }}
+
+  <div class="row">
+    <div>
+      <label for="start_date">Start date</label>
+      <input id="start_date" name="start_date" type="date" value="{{ form.get('start_date') or '' }}" {{ 'required' if not trip.is_default }}>
+      {{ field_error(errors, 'start_date') }}
+    </div>
+    <div>
+      <label for="end_date">End date <span class="muted">(optional)</span></label>
+      <input id="end_date" name="end_date" type="date" value="{{ form.get('end_date') or '' }}">
+      {{ field_error(errors, 'end_date') }}
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn" href="{{ url_for('trips.index') }}">Cancel</a>
+    {% if not trip.is_default %}
+      <button class="btn btn-danger push-right" type="button" data-open-dialog="confirm-delete">Delete</button>
+    {% endif %}
+  </div>
+</form>
+
+{% if not trip.is_default %}
+<dialog id="confirm-delete" class="dialog">
+  <form method="post" action="{{ url_for('trips.delete', trip_id=trip.id) }}">
+    {{ csrf_field() }}
+    <h2>Delete “{{ trip.name }}”?</h2>
+    <p>{% if trip.item_count %}{{ trip.item_count }} item{{ '' if trip.item_count == 1 else 's' }} will move to “{{ default_trip.name }}”.{% else %}No items use this trip.{% endif %}</p>
+    <div class="actions">
+      <button class="btn" type="button" data-close-dialog>Keep trip</button>
+      <button class="btn btn-danger" type="submit">Delete trip</button>
+    </div>
+  </form>
+</dialog>
+{% endif %}
+{% endblock %}

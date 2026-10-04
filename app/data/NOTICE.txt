@@ -1,0 +1,8 @@
+Bundled map data (all used offline, nothing is fetched at runtime)
+
+- Country outlines (app/static/geo/countries.json): Natural Earth, public domain. https://www.naturalearthdata.com
+- City list (app/data/places.json): GeoNames, licensed CC BY 4.0. https://www.geonames.org
+  Credit is shown in the corner of every map ("Map: Natural Earth · Places: GeoNames").
+- Leaflet 1.9.4 (BSD-2-Clause) and Leaflet.markercluster 1.5.3 (MIT): app/static/vendor/, licenses alongside.
+
+Rebuild the data files with scripts/build_geodata.py.

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_error, csrf_field %}
+{% block title %}Trips · {{ collection.name }}{% endblock %}
+{% block content %}
+<h1>Trips</h1>
+<p class="lede">Give a trip a date (or a date range) and choosing it on the add-item form fills in the date acquired. Deleting a trip moves its items to the default trip.</p>
+
+<section class="panel wide">
+  <ul class="tool-list">
+    {% for t in trips %}
+    <li>
+      <div>
+        <strong>{{ t.name }}</strong>
+        {% if t.is_default %}<span class="badge">Default</span>{% endif %}
+        <span>{{ (t.start_date|trip_dates(t.end_date)) or 'No dates' }} · <a href="{{ url_for('items.index', trip=t.id) }}">{{ t.item_count }} item{{ '' if t.item_count == 1 else 's' }}</a></span>
+      </div>
+      {% if can_edit %}<a class="btn" href="{{ url_for('trips.edit', trip_id=t.id) }}">Edit</a>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% if can_edit %}
+<form class="panel form" method="post">
+  {{ csrf_field() }}
+  <h2>Add a trip</h2>
+  <label for="name">Name</label>
+  <input id="name" name="name" type="text" maxlength="200" value="{{ form.get('name', '') }}" required>
+  {{ field_error(errors, 'name') }}
+  <div class="row">
+    <div>
+      <label for="start_date">Start date</label>
+      <input id="start_date" name="start_date" type="date" value="{{ form.get('start_date', '') }}" required>
+      {{ field_error(errors, 'start_date') }}
+    </div>
+    <div>
+      <label for="end_date">End date <span class="muted">(optional)</span></label>
+      <input id="end_date" name="end_date" type="date" value="{{ form.get('end_date', '') }}">
+      {{ field_error(errors, 'end_date') }}
+    </div>
+  </div>
+  <p class="hint">Leave the end date empty for a single-day trip.</p>
+  <div class="actions"><button class="btn btn-primary" type="submit">Add trip</button></div>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf_field %}
+{% block title %}Account · Collection{% endblock %}
+{% block content %}
+<form class="form form-narrow" method="post">
+  {{ csrf_field() }}
+  <h1>Account</h1>
+  <p class="lede">Signed in as {{ current_user.username }}. Change your password below.</p>
+  {% if error %}<p class="field-error" role="alert">{{ error }}</p>{% endif %}
+
+  <label for="current_password">Current password</label>
+  <input id="current_password" name="current_password" type="password" autocomplete="current-password" required>
+
+  <label for="new_password">New password</label>
+  <input id="new_password" name="new_password" type="password" autocomplete="new-password" required>
+
+  <label for="confirm_password">Repeat new password</label>
+  <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required>
+
+  <div class="actions"><button class="btn btn-primary" type="submit">Update password</button></div>
+</form>
+{% endblock %}

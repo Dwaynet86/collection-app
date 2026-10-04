@@ -1,3 +1,4 @@
+{% from "_macros.html" import csrf_field %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -8,12 +9,64 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block styles %}{% endblock %}
+  <script>
+    /* Apply saved gallery view settings before first paint (no flash). */
+    try {
+      var size = localStorage.getItem("collection.tileSize");
+      if (size) document.documentElement.style.setProperty("--tile-min", size + "px");
+      if (localStorage.getItem("collection.showDetails") === "0") document.documentElement.classList.add("hide-details");
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="{{ url_for('items.index') }}">Collection</a>
-    <a class="nav-link" href="{{ url_for('maintenance.index') }}">Maintenance</a>
-    <a class="btn btn-primary" href="{{ url_for('items.create') }}">Add item</a>
+    <a class="brand" href="{{ url_for('collections.home') }}">Collection</a>
+
+    {% if current_user.is_authenticated %}
+      {% if collection %}
+        {% if my_collections|length > 1 %}
+          <select class="switcher" aria-label="Switch collection" data-nav>
+            {% for c in my_collections %}
+              <option value="{{ url_for('items.index', slug=c.slug) }}" {{ 'selected' if c.id == collection.id }}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          <span class="crumb">{{ collection.name }}</span>
+        {% endif %}
+      {% endif %}
+
+      <span class="spacer"></span>
+
+      {% if est_value is not none %}
+        <span class="est-value" title="Total of recorded costs"><span>EST. VALUE</span> <strong>{{ est_value|money }}</strong></span>
+      {% endif %}
+
+      {% if collection %}
+        <a class="nav-link" href="{{ url_for('geo.index') }}">Map</a>
+        <a class="nav-link" href="{{ url_for('trips.index') }}">Trips</a>
+      {% endif %}
+      {% if collection and is_owner %}
+        <a class="nav-link" href="{{ url_for('members.index') }}">Members</a>
+        <a class="nav-link" href="{{ url_for('maintenance.index') }}">Maintenance</a>
+      {% endif %}
+      {% if collection and can_edit %}
+        <a class="btn btn-primary" href="{{ url_for('items.create') }}">Add item</a>
+      {% endif %}
+
+      <details class="menu">
+        <summary>{{ current_user.username }}</summary>
+        <div class="menu-body">
+          <a href="{{ url_for('collections.index') }}">Collections</a>
+          <a href="{{ url_for('auth.account') }}">Account</a>
+          {% if current_user.is_admin %}<a href="{{ url_for('admin.user_list') }}">Users</a>{% endif %}
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            {{ csrf_field() }}
+            <button type="submit">Log out</button>
+          </form>
+        </div>
+      </details>
+    {% endif %}
   </header>
 
   <main class="page">
@@ -26,5 +79,6 @@
   </main>
 
   <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

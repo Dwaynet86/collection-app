@@ -53,7 +53,11 @@ a { color: inherit; }
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
 }
-.brand { font: 600 1.4rem var(--font-display); text-decoration: none; margin-right: auto; }
+.brand { font: 600 1.4rem var(--font-display); text-decoration: none; }
+.spacer { flex: 1; }
+.crumb { color: var(--muted); }
+.crumb::before { content: "/"; margin-right: .75rem; color: var(--line); }
+.switcher { width: auto; max-width: 14rem; padding: .35rem .6rem; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; font: inherit; }
 .page { max-width: 1200px; margin: 0 auto; padding: 2rem clamp(1rem, 4vw, 2.5rem) 4rem; }
 
 /* ---- Buttons ---- */
@@ -92,7 +96,7 @@ textarea { resize: vertical; }
 .grid {
   list-style: none; margin: 0; padding: 0;
   display: grid; gap: 1.75rem 1.25rem;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--tile-min, 210px), 1fr));
 }
 .tile { display: block; text-decoration: none; }
 .tile-img {
@@ -178,3 +182,76 @@ textarea { resize: vertical; }
 .tool-list { list-style: none; margin: 0; padding: 0; }
 .tool-list li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 0; border-top: 1px solid var(--line); }
 .tool-list span { display: block; color: var(--muted); font-size: .9rem; }
+
+/* ---- User menu ---- */
+.menu { position: relative; }
+.menu summary { cursor: pointer; list-style: none; padding: .45rem .75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-weight: 500; }
+.menu summary::-webkit-details-marker { display: none; }
+.menu-body { position: absolute; right: 0; top: calc(100% + .4rem); min-width: 11rem; padding: .35rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 24px rgb(0 0 0 / .12); display: grid; }
+.menu-body a, .menu-body button { display: block; width: 100%; text-align: left; padding: .5rem .7rem; border: 0; border-radius: 6px; background: none; color: var(--ink); font: inherit; text-decoration: none; cursor: pointer; }
+.menu-body a:hover, .menu-body button:hover { background: var(--bg); }
+
+/* ---- Auth and account forms ---- */
+.form-narrow { max-width: 26rem; margin: 2rem auto; }
+.panel.form { max-width: 760px; }
+.panel.wide { max-width: 960px; }
+.inline-form { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.inline-form input, .inline-form select { width: auto; }
+.badge { display: inline-block; margin-left: .5rem; padding: .05rem .5rem; border-radius: 999px; font-size: .75rem; background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+.badge-off { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); }
+.flash-error { border-left-color: var(--danger); }
+.tool-list li { flex-wrap: wrap; }
+
+/* ---- Camera button: only useful on touch devices ---- */
+.btn-camera { width: 100%; margin-bottom: .6rem; }
+@media (pointer: fine) { .btn-camera { display: none; } }
+
+/* ---- Gallery view controls ---- */
+.list-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1.5rem; margin-bottom: 1.25rem; }
+.list-head .count { margin: 0; }
+.view-controls { display: flex; align-items: center; gap: 1.25rem; color: var(--muted); font-size: .9rem; }
+.view-controls label { display: flex; align-items: center; gap: .5rem; margin: 0; }
+.view-controls input[type="range"] { width: 8rem; accent-color: var(--accent); }
+.tile-img.placeholder { font-size: calc(var(--tile-min, 210px) * .28); }
+.hide-details .tile-name, .hide-details .tile-meta { display: none; }
+.hide-details .grid { gap: .75rem; }
+
+/* ---- Header value, trips, hints ---- */
+.est-value { display: inline-flex; gap: .45rem; align-items: baseline; font-size: .8rem; letter-spacing: .04em; color: var(--muted); white-space: nowrap; }
+.est-value strong { font: 600 1.05rem var(--font-display); letter-spacing: 0; color: var(--ink); }
+.hint { margin: .35rem 0 0; font-size: .85rem; color: var(--muted); min-height: 1.2em; }
+.muted { color: var(--muted); font-weight: 400; }
+.push-right { margin-left: auto; }
+.actions .push-right { margin-left: auto; }
+
+/* Background-removed photos: show the whole subject on a neutral backdrop. */
+.tile-img.cutout { object-fit: contain; padding: 7%; background: var(--surface); }
+
+/* ---- Map and pin picker (offline Leaflet) ---- */
+:root { --ocean: #cfe3ee; --land: #f1ede2; --border-map: #9aa7b3; }
+@media (prefers-color-scheme: dark) { :root { --ocean: #16222c; --land: #26323c; --border-map: #46535f; } }
+
+.geo-picker { margin: 1rem 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.geo-picker > summary { cursor: pointer; padding: .7rem 1rem; font-weight: 600; }
+.geo-body { padding: 0 1rem 1rem; }
+.geo-map { height: 280px; border-radius: var(--radius); border: 1px solid var(--line); z-index: 0; }
+.geo-map-large { height: calc(100vh - 17rem); min-height: 360px; }
+.geo-search { position: relative; margin-bottom: .6rem; }
+.geo-results { position: absolute; z-index: 1000; left: 0; right: 0; margin: 2px 0 0; padding: .25rem; list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.18); max-height: 16rem; overflow: auto; }
+.geo-results li { padding: .45rem .6rem; border-radius: 6px; cursor: pointer; }
+.geo-results li:hover, .geo-results li.active { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.geo-results li.is-country { font-weight: 600; }
+.geo-coords { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: .6rem; align-items: end; margin-top: .75rem; }
+@media (max-width: 640px) { .geo-coords { grid-template-columns: 1fr 1fr; } }
+
+.map-page .toolbar { margin-bottom: .5rem; }
+.leaflet-container { font: inherit; }
+.leaflet-container .leaflet-control-attribution { background: color-mix(in srgb, var(--surface) 80%, transparent); color: var(--muted); }
+.geo-pin { background: none; border: 0; }
+.geo-pin span { display: block; width: 24px; height: 24px; margin: 0 auto; background: var(--accent); border: 3px solid #fff; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 2px 6px rgba(0,0,0,.45); }
+.marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div { background-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.pin-popup { min-width: 140px; }
+.pin-popup img { display: block; width: 100%; max-width: 180px; border-radius: 6px; margin-bottom: .4rem; }
+.pin-name { font-weight: 600; }
+.pin-where { color: #657283; font-size: .85rem; margin-top: .15rem; }

@@ -15,7 +15,11 @@
     <dl class="facts">
       <div><dt>Acquired</dt><dd>{{ (item.date_acquired|pretty_date) or 'Date not recorded' }}</dd></div>
       <div><dt>Where</dt><dd>{{ item.location_acquired or 'Location not recorded' }}</dd></div>
-      <div><dt>Trip</dt><dd>{% if item.trip_name %}<a href="{{ url_for('items.index', trip=item.trip_name) }}">{{ item.trip_name }}</a>{% else %}No trip{% endif %}</dd></div>
+      {% if item.latitude is number %}
+      <div><dt>Pin</dt><dd><a href="{{ url_for('geo.index', focus=item.id) }}">Show on map</a> <span class="muted">· {{ '%.4f'|format(item.latitude) }}, {{ '%.4f'|format(item.longitude) }}</span></dd></div>
+      {% endif %}
+      <div><dt>Trip</dt><dd><a href="{{ url_for('items.index', trip=item.trip_id) }}">{{ item.trip_name }}</a>{% if item.trip_start %}<span class="muted"> · {{ item.trip_start|trip_dates(item.trip_end) }}</span>{% endif %}</dd></div>
+      <div><dt>Cost</dt><dd>{{ (item.cost|money) if item.cost is not none else 'Not recorded' }}</dd></div>
     </dl>
 
     {% if item.tags %}
@@ -28,13 +32,16 @@
       <p class="description">{{ item.description }}</p>
     {% endif %}
 
+    {% if can_edit %}
     <div class="actions">
       <a class="btn btn-primary" href="{{ url_for('items.edit', item_id=item.id) }}">Edit</a>
       <button class="btn btn-danger" type="button" data-open-dialog="confirm-delete">Remove</button>
     </div>
+    {% endif %}
   </div>
 </article>
 
+{% if can_edit %}
 <dialog id="confirm-delete" class="dialog">
   <form method="post" action="{{ url_for('items.delete', item_id=item.id) }}">
     {{ csrf_field() }}
@@ -46,4 +53,5 @@
     </div>
   </form>
 </dialog>
+{% endif %}
 {% endblock %}

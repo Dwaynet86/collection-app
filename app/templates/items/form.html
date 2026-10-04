@@ -3,6 +3,15 @@
 {% set editing = mode == 'edit' %}
 {% block title %}{{ 'Edit item' if editing else 'Add item' }} · Collection{% endblock %}
 
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/geo.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/picker.js') }}" defer></script>
+{% endblock %}
+
 {% block content %}
 <form class="form" method="post" enctype="multipart/form-data" novalidate>
   {{ csrf_field() }}
@@ -30,11 +39,56 @@
         </div>
       </div>
 
-      <label for="trip_name">Trip name</label>
-      <input id="trip_name" name="trip_name" type="text" maxlength="200" list="trip-options"
-             value="{{ item.get('trip_name') or '' }}">
-      <datalist id="trip-options">{% for t in known_trips %}<option value="{{ t }}">{% endfor %}</datalist>
-      {{ field_error(errors, 'trip_name') }}
+      {% set has_pin = item.get('latitude') not in (none, '') and item.get('longitude') not in (none, '') %}
+      <details class="geo-picker" id="geo-picker" {{ 'open' if has_pin or errors.get('latitude') }}
+               data-search-url="{{ url_for('geo.search') }}"
+               data-countries="{{ url_for('static', filename='geo/countries.json') }}">
+        <summary>Pin on map <span class="muted">(optional)</span></summary>
+        <div class="geo-body">
+          <div class="geo-search">
+            <input id="geo-search" type="search" autocomplete="off" placeholder="Search a city or country" aria-label="Search a city or country"
+                   role="combobox" aria-expanded="false" aria-controls="geo-results">
+            <ul id="geo-results" class="geo-results" role="listbox" hidden></ul>
+          </div>
+          <div id="geo-map" class="geo-map" aria-label="Map: click to place a pin"></div>
+          <div class="geo-coords">
+            <div>
+              <label for="latitude">Latitude</label>
+              <input id="latitude" name="latitude" type="text" inputmode="decimal" placeholder="38.7223"
+                     value="{{ item.get('latitude') if item.get('latitude') is not none else '' }}">
+            </div>
+            <div>
+              <label for="longitude">Longitude</label>
+              <input id="longitude" name="longitude" type="text" inputmode="decimal" placeholder="-9.1393"
+                     value="{{ item.get('longitude') if item.get('longitude') is not none else '' }}">
+            </div>
+            <button class="btn" type="button" id="geo-clear">Clear pin</button>
+            <button class="btn" type="button" id="geo-locate" hidden>Use my location</button>
+          </div>
+          {{ field_error(errors, 'latitude') }}
+          <p class="hint">Click the map, drag the pin, search, or type coordinates. The location text above stays yours to edit.</p>
+        </div>
+      </details>
+
+      <div class="row">
+        <div>
+          <label for="trip_id">Trip</label>
+          {% set current = item.get('trip_id') %}
+          <select id="trip_id" name="trip_id">
+            {% for t in trips %}
+              <option value="{{ t.id }}" data-start="{{ t.start_date or '' }}" data-dates="{{ t.start_date|trip_dates(t.end_date) }}"
+                {{ 'selected' if (current is not none and current|string == t.id|string) or (not current and t.is_default) }}>{{ t.name }}</option>
+            {% endfor %}
+          </select>
+          <p class="hint"><span id="trip-hint"></span> <a href="{{ url_for('trips.index') }}">Manage trips</a></p>
+        </div>
+        <div>
+          <label for="cost">Cost</label>
+          <input id="cost" name="cost" type="text" inputmode="decimal" placeholder="0.00"
+                 value="{{ item.get('cost') if item.get('cost') is not none else '' }}">
+          {{ field_error(errors, 'cost') }}
+        </div>
+      </div>
 
       <label for="tags">Tags</label>
       {% set raw_tags = item.get('tags') %}
@@ -62,8 +116,18 @@
           <span id="preview-empty">No photo yet</span>
         {% endif %}
       </div>
+      <button class="btn btn-camera" type="button" id="camera-btn">Take photo</button>
+      <input id="camera" type="file" accept="image/*" capture="environment" hidden>
       <input id="image" name="image" type="file" accept="image/*">
       {{ field_error(errors, 'image') }}
+
+      {% if bg_removal %}
+        <label class="check"><input type="checkbox" id="remove_background" name="remove_background" value="1" {{ 'checked' if request.form.get('remove_background') }}> Remove background <span class="muted">(a few seconds)</span></label>
+        {% if editing and item.get('image_filename') %}<p class="hint">Applies to a newly chosen photo, or to the current photo if you don't choose one.</p>{% endif %}
+      {% endif %}
+      {% if editing and has_original %}
+        <label class="check"><input type="checkbox" name="restore_original" value="1"> Restore the original background</label>
+      {% endif %}
 
       {% if editing and item.get('image_filename') %}
         <label class="check"><input type="checkbox" name="remove_image" value="1"> Remove current photo</label>

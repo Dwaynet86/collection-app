@@ -2,7 +2,7 @@
 
 {% macro item_image(item, class="", thumb=False) %}
   {% if item.image_filename %}
-    <img class="{{ class }}" alt="{{ item.name }}" loading="lazy"
+    <img class="{{ class }}{{ ' cutout' if item.image_filename|is_cutout }}" alt="{{ item.name }}" loading="lazy"
          src="{{ url_for('items.thumb' if thumb else 'items.media', filename=item.image_filename) }}">
   {% else %}
     <div class="{{ class }} placeholder" aria-hidden="true">{{ item.name[:1]|upper }}</div>

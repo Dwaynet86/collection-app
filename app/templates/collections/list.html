@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf_field %}
+{% block title %}Collections · Collection{% endblock %}
+{% block content %}
+<h1>Collections</h1>
+
+{% if mine %}
+<section class="panel">
+  <ul class="tool-list">
+    {% for c in mine %}
+    <li>
+      <div><strong>{{ c.name }}</strong><span>{{ c.item_count }} item{{ '' if c.item_count == 1 else 's' }} · {{ c.total_value|money }} · you are {{ 'an' if c.role == 'owner' else 'a' }} {{ c.role }}</span></div>
+      <a class="btn" href="{{ url_for('items.index', slug=c.slug) }}">Open</a>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% else %}
+<p class="lede">You aren't in any collection yet. Create one, or ask an owner to add you.</p>
+{% endif %}
+
+<form class="panel form" method="post">
+  {{ csrf_field() }}
+  <h2>New collection</h2>
+  <label for="name">Name</label>
+  <input id="name" name="name" type="text" maxlength="100" value="{{ name }}" required>
+  {% if error %}<p class="field-error">{{ error }}</p>{% endif %}
+  <div class="actions"><button class="btn btn-primary" type="submit">Create collection</button></div>
+</form>
+{% endblock %}

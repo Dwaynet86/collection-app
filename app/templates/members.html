@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf_field %}
+{% block title %}Members · {{ collection.name }}{% endblock %}
+{% block content %}
+<h1>Members</h1>
+<p class="lede">Who can use {{ collection.name }}. Viewers can browse, editors can add and change items, owners can also manage members and export.</p>
+
+<section class="panel">
+  <h2>People</h2>
+  <ul class="tool-list">
+    {% for m in members %}
+    <li>
+      <div><strong>{{ m.username }}</strong>{% if m.id == current_user.id %}<span>You</span>{% elif not m.is_active %}<span>Account deactivated</span>{% endif %}</div>
+      <div class="inline-form">
+        <form method="post" action="{{ url_for('members.change_role', user_id=m.id) }}" class="inline-form">
+          {{ csrf_field() }}
+          <select name="role" aria-label="Role for {{ m.username }}" data-autosubmit>
+            {% for r in roles %}<option value="{{ r }}" {{ 'selected' if r == m.role }}>{{ r|capitalize }}</option>{% endfor %}
+          </select>
+        </form>
+        <form method="post" action="{{ url_for('members.remove', user_id=m.id) }}">
+          {{ csrf_field() }}
+          <button class="btn btn-danger" type="submit">Remove</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<form class="panel form" method="post" action="{{ url_for('members.add') }}">
+  {{ csrf_field() }}
+  <h2>Add a member</h2>
+  <div class="row">
+    <div><label for="username">Username</label><input id="username" name="username" type="text" autocapitalize="none" required></div>
+    <div><label for="role">Role</label>
+      <select id="role" name="role">{% for r in roles|reverse %}<option value="{{ r }}" {{ 'selected' if r == 'viewer' }}>{{ r|capitalize }}</option>{% endfor %}</select>
+    </div>
+  </div>
+  <div class="actions"><button class="btn btn-primary" type="submit">Add member</button></div>
+</form>
+{% endblock %}

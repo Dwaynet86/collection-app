@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf_field %}
+{% block title %}Users · Collection{% endblock %}
+{% block content %}
+<h1>Users</h1>
+<p class="lede">Create and manage accounts. Add people to collections from each collection's Members page.</p>
+
+<section class="panel wide">
+  <h2>Accounts</h2>
+  <ul class="tool-list">
+    {% for u in users %}
+    <li>
+      <div>
+        <strong>{{ u.username }}</strong>
+        {% if u.is_admin %}<span class="badge">Admin</span>{% endif %}
+        {% if not u.is_active %}<span class="badge badge-off">Deactivated</span>{% endif %}
+      </div>
+      <div class="inline-form">
+        <form method="post" action="{{ url_for('admin.reset_password', user_id=u.id) }}" class="inline-form">
+          {{ csrf_field() }}
+          <input type="password" name="password" placeholder="New password" autocomplete="new-password" aria-label="New password for {{ u.username }}" required>
+          <button class="btn" type="submit">Set password</button>
+        </form>
+        {% if u.id != current_user.id %}
+        <form method="post" action="{{ url_for('admin.toggle_admin', user_id=u.id) }}">
+          {{ csrf_field() }}<input type="hidden" name="admin" value="{{ 0 if u.is_admin else 1 }}">
+          <button class="btn" type="submit">{{ 'Remove admin' if u.is_admin else 'Make admin' }}</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.toggle_active', user_id=u.id) }}">
+          {{ csrf_field() }}<input type="hidden" name="active" value="{{ 0 if u.is_active else 1 }}">
+          <button class="btn {{ 'btn-danger' if u.is_active }}" type="submit">{{ 'Deactivate' if u.is_active else 'Reactivate' }}</button>
+        </form>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<form class="panel form" method="post">
+  {{ csrf_field() }}
+  <h2>Add user</h2>
+  <div class="row">
+    <div><label for="username">Username</label><input id="username" name="username" type="text" autocapitalize="none" required></div>
+    <div><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="new-password" required></div>
+  </div>
+  <label class="check"><input type="checkbox" name="is_admin" value="1"> Can manage user accounts</label>
+  <div class="actions"><button class="btn btn-primary" type="submit">Create user</button></div>
+</form>
+{% endblock %}

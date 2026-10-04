@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% from "_macros.html" import csrf_field %}
 {% block title %}Maintenance · Collection{% endblock %}
 
 {% block content %}
 <h1>Maintenance</h1>
-<p class="lede">Tools for looking after the collection as a whole.</p>
+<p class="lede">Tools for looking after {{ collection.name }} as a whole.</p>
 
 <section class="panel">
   <h2>Overview</h2>
@@ -12,6 +13,7 @@
     <div><dt>With photos</dt><dd>{{ stats.with_images }}</dd></div>
     <div><dt>Tags</dt><dd>{{ stats.tags }}</dd></div>
     <div><dt>Trips</dt><dd>{{ stats.trips }}</dd></div>
+    <div><dt>Est. value</dt><dd>{{ stats.total_value|money }}</dd></div>
     <div><dt>Photo storage</dt><dd>{{ disk_bytes|filesize }}</dd></div>
   </dl>
 </section>
@@ -34,4 +36,13 @@
     </li>
   </ul>
 </section>
+
+<form class="panel form" method="post" action="{{ url_for('maintenance.import_backup') }}" enctype="multipart/form-data">
+  {{ csrf_field() }}
+  <h2>Import</h2>
+  <p>Restore items from a backup ZIP (with photos) or a JSON export. Missing trips are created. If anything in the file is invalid, nothing is imported.</p>
+  <input type="file" name="backup" accept=".zip,.json,application/zip,application/json" required>
+  <label class="check"><input type="checkbox" name="skip_duplicates" value="1" checked> Skip items already here (same name, date and location)</label>
+  <div class="actions"><button class="btn btn-primary" type="submit">Import</button></div>
+</form>
 {% endblock %}

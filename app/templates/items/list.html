@@ -7,7 +7,7 @@
   <input type="search" name="q" value="{{ search }}" placeholder="Search name, place, trip, tag, or notes" aria-label="Search items">
   <select name="trip" aria-label="Filter by trip" data-autosubmit>
     <option value="">All trips</option>
-    {% for t in trips %}<option value="{{ t.trip_name }}" {{ 'selected' if t.trip_name|lower == trip|lower }}>{{ t.trip_name }} ({{ t.n }})</option>{% endfor %}
+    {% for t in trips %}<option value="{{ t.id }}" {{ 'selected' if t.id == trip }}>{{ t.name }} ({{ t.item_count }})</option>{% endfor %}
   </select>
   <select name="tag" aria-label="Filter by tag" data-autosubmit>
     <option value="">All tags</option>
@@ -23,11 +23,18 @@
 
 {% set filtered = search or tag or trip %}
 {% if items %}
-  <p class="count">{{ total }} item{{ '' if total == 1 else 's' }}{% if filtered %} found{% endif %}</p>
+  <div class="list-head">
+    <p class="count">{{ total }} item{{ '' if total == 1 else 's' }}{% if filtered %} found{% endif %}</p>
+    <div class="view-controls">
+      <a href="{{ url_for('geo.index', q=search or none, tag=tag or none, trip=trip) }}">View on map</a>
+      <label class="slider">Size <input id="tile-size" type="range" min="110" max="320" step="10" value="210" aria-label="Thumbnail size"></label>
+      <label class="check"><input id="show-details" type="checkbox" checked> Show details</label>
+    </div>
+  </div>
   <ul class="grid">
     {% for item in items %}
     <li>
-      <a class="tile" href="{{ url_for('items.detail', item_id=item.id) }}">
+      <a class="tile" href="{{ url_for('items.detail', item_id=item.id) }}" title="{{ item.name }}" aria-label="{{ item.name }}">
         {{ item_image(item, class="tile-img", thumb=True) }}
         <span class="tile-name">{{ item.name }}</span>
         <span class="tile-meta">
@@ -53,8 +60,12 @@
 {% else %}
   <div class="empty">
     <h1>Your collection is empty.</h1>
-    <p>Add the first item with a photo, where you found it, and when.</p>
-    <a class="btn btn-primary" href="{{ url_for('items.create') }}">Add item</a>
+    {% if can_edit %}
+      <p>Add the first item with a photo, where you found it, and when.</p>
+      <a class="btn btn-primary" href="{{ url_for('items.create') }}">Add item</a>
+    {% else %}
+      <p>Nothing has been added yet.</p>
+    {% endif %}
   </div>
 {% endif %}
 {% endblock %}
