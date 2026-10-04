@@ -1,12 +1,13 @@
 import json
 import zipfile
 from datetime import date, datetime, timezone
+from decimal import Decimal
 
 from app import exporter
 
 ITEM = {
     "id": 1, "name": "=cmd()", "date_acquired": date(2024, 3, 4),
-    "location_acquired": None, "trip_name": "Portugal 2024", "tags": ["coins", "bronze"],
+    "location_acquired": None, "trip_name": "Portugal 2024", "cost": Decimal("12.50"), "tags": ["coins", "bronze"],
     "description": "", "image_filename": "a.webp",
     "created_at": datetime(2024, 3, 5, tzinfo=timezone.utc), "updated_at": None,
 }
@@ -19,11 +20,13 @@ def test_csv_escapes_formulas_and_joins_tags():
 
 
 def test_json_roundtrip():
-    data = json.loads(exporter.to_json([ITEM]))
-    assert data["items"][0]["date_acquired"] == "2024-03-04"
+    trips = [{"name": "Home", "start_date": None, "end_date": None, "is_default": True}]
+    data = json.loads(exporter.to_json([ITEM], trips))
+    assert data["version"] == 2 and data["trips"][0]["is_default"] is True
+    assert data["items"][0]["date_acquired"] == "2024-03-04" and data["items"][0]["cost"] == "12.50"
 
 
 def test_backup_zip_contains_images(tmp_path):
     (tmp_path / "a.webp").write_bytes(b"img")
-    with zipfile.ZipFile(exporter.build_backup_zip([ITEM], tmp_path)) as zf:
+    with zipfile.ZipFile(exporter.build_backup_zip([ITEM], [], tmp_path)) as zf:
         assert set(zf.namelist()) == {"items.json", "images/a.webp"}
