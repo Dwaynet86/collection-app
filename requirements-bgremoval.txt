@@ -1,0 +1,4 @@
+# Optional: automatic background removal (runs locally).
+# Install with:  pip install -r requirements-bgremoval.txt
+# The first cut-out downloads a ~170 MB model (needs internet once; stored in ~/.rembg).
+rembg[cpu]>=2.0.60
